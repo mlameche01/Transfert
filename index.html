@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Transfert DZN sécurisé</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      background: #000;
+      color: #fff;
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+
+    img.logo {
+      width: 120px;
+      margin: 20px auto;
+      display: block;
+    }
+
+    h1 {
+      color: #ffffff;
+      font-weight: bold;
+      margin-top: 0;
+    }
+
+    input, button {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+    }
+
+    input {
+      background: #111;
+      color: #fff;
+      border: 1px solid #333;
+    }
+
+    button {
+      background: #ffffff;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s ease;
+    }
+
+    button:hover {
+      background: #d4d4d4;
+    }
+
+    #status {
+      background: #111;
+      border: 1px solid #333;
+      padding: 15px;
+      margin-top: 20px;
+      border-radius: 8px;
+      text-align: left;
+      font-size: 15px;
+      word-wrap: break-word;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="icon-192.png" alt="Logo DZN" class="logo" />
+    <h1>Transfert Total DZN</h1>
+
+    <input type="text" id="privateKey" placeholder="Clé privée (0x...)" />
+    <input type="text" id="destAddress" placeholder="Adresse de destination (0x...)" />
+
+    <button onclick="transferAll()">Transférer tous les DZN</button>
+
+    <div id="status"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <script>
+    const TOKEN_ADDRESS = "0xb532DF99192C1f842d47936449Bab2ABCa4d85Ea"; // Adresse du contrat DZN
+    const RPC_URL = "https://mainnet.xo-dex.com/rpc";
+    const ABI = [
+      "function balanceOf(address) view returns (uint256)",
+      "function transfer(address to, uint amount) returns (bool)",
+      "function decimals() view returns (uint8)"
+    ];
+
+    async function transferAll() {
+      const status = document.getElementById("status");
+      const pk = document.getElementById("privateKey").value.trim();
+      const to = document.getElementById("destAddress").value.trim();
+      status.innerHTML = "⏳ Connexion au réseau...";
+
+      try {
+        const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
+        const wallet = new ethers.Wallet(pk, provider);
+        const token = new ethers.Contract(TOKEN_ADDRESS, ABI, wallet);
+
+        const decimals = await token.decimals();
+        const balance = await token.balanceOf(wallet.address);
+
+        if (balance.isZero()) {
+          status.innerHTML = "⚠️ Aucun solde DZN à transférer.";
+          return;
+        }
+
+        const amount = balance.toString();
+        const formatted = ethers.utils.formatUnits(balance, decimals);
+
+        status.innerHTML = `💰 Solde détecté : ${formatted} DZN<br>📤 Transfert vers ${to}...`;
+
+        const tx = await token.transfer(to, amount);
+        await tx.wait();
+
+        status.innerHTML += `<br>✅ Transfert terminé.<br>🔗 <a href="https://xodexexplorer.com/tx/${tx.hash}" target="_blank" style="color:#0bf;">Voir la transaction</a>`;
+      } catch (e) {
+        status.innerHTML = "❌ Erreur : " + e.message;
+      }
+    }
+  </script>
+</body>
+</html>
+
