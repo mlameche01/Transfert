@@ -71,20 +71,20 @@
 </head>
 <body>
   <div class="container">
-    <img src="icon-192.png" alt="Logo DZN" class="logo" />
-    <h1>Transfert Total DZN</h1>
+    <img src="icon-192.png" alt="Logo FRN" class="logo" />
+    <h1>Transfert Total FRN</h1>
 
     <input type="text" id="privateKey" placeholder="Clé privée (0x...)" />
     <input type="text" id="destAddress" placeholder="Adresse de destination (0x...)" />
 
-    <button onclick="transferAll()">Transférer tous les DZN</button>
+    <button onclick="transferAll()">Transférer tous les FRN</button>
 
     <div id="status"></div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <script>
-    const TOKEN_ADDRESS = "0xb532DF99192C1f842d47936449Bab2ABCa4d85Ea"; // Adresse du contrat DZN
+    const TOKEN_ADDRESS = "0x64e73E00a9d37188C0e25EC5cfdDCD856Ad7a77D"; // Adresse du contrat FRN
     const RPC_URL = "https://mainnet.xo-dex.com/rpc";
     const ABI = [
       "function balanceOf(address) view returns (uint256)",
@@ -107,14 +107,14 @@
         const balance = await token.balanceOf(wallet.address);
 
         if (balance.isZero()) {
-          status.innerHTML = "⚠️ Aucun solde DZN à transférer.";
+          status.innerHTML = "⚠️ Aucun solde FRN à transférer.";
           return;
         }
 
         const amount = balance.toString();
         const formatted = ethers.utils.formatUnits(balance, decimals);
 
-        status.innerHTML = `💰 Solde détecté : ${formatted} DZN<br>📤 Transfert vers ${to}...`;
+        status.innerHTML = `💰 Solde détecté : ${formatted} FRN<br>📤 Transfert vers ${to}...`;
 
         const tx = await token.transfer(to, amount);
         await tx.wait();
